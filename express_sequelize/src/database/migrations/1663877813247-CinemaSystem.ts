@@ -1,4 +1,6 @@
-import { QueryInterface } from 'sequelize';
+import { QueryInterface, DataTypes, Sequelize } from "sequelize";
+
+const sequelize = new Sequelize("mydatabase", "myuser", "mypassword", { host: "localhost", dialect: "mysql" });
 
 export default {
   /**
@@ -31,8 +33,155 @@ export default {
    * As a cinema owner I don't want to configure the seating for every show
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  up: (queryInterface: QueryInterface): Promise<void> => {
-    throw new Error('TODO: implement migration in task 4');
+  up: async (queryInterface: QueryInterface) => {
+    // Create tables
+    await queryInterface.createTable("movies", {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      release_date: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+    });
+
+    await queryInterface.createTable("shows", {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      movie_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "movies",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+      start_time: {
+        type: DataTypes.TIME,
+        allowNull: false,
+      },
+      end_time: {
+        type: DataTypes.TIME,
+        allowNull: false,
+      },
+      room_number: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+    });
+
+    await queryInterface.createTable("show_prices", {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      show_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "shows",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+      price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+    });
+
+    await queryInterface.createTable("seats", {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      show_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "shows",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+      row: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      number: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      type: {
+        type: DataTypes.ENUM("regular", "vip", "couple", "super-vip"),
+        allowNull: false,
+        defaultValue: "regular",
+      },
+      is_booked: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+    });
+    // throw new Error('TODO: implement migration in task 4');
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

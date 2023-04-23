@@ -1,9 +1,8 @@
-import { MenuItem } from './entities/menu-item.entity';
+import { MenuItem } from "./entities/menu-item.entity";
 import { Repository } from "typeorm";
 import App from "../../app";
 
 export class MenuItemsService {
-
   private menuItemRepository: Repository<MenuItem>;
 
   constructor(app: App) {
@@ -86,6 +85,19 @@ export class MenuItemsService {
   */
 
   async getMenuItems() {
-    throw new Error('TODO in task 3');
+    const menuItems = await this.menuItemRepository.find();
+    const roots = menuItems.filter((item) => !item.parentId);
+    roots.forEach((root) => {
+      root.children = this.transformMenuItem(root, menuItems);
+    });
+    return roots;
+  }
+
+  transformMenuItem(parent: MenuItem, menuItems: MenuItem[]): any {
+    const children = menuItems.filter((item) => item.parentId === parent.id);
+    children.forEach((child: any) => {
+      child.children = this.transformMenuItem(child, menuItems);
+    });
+    return children;
   }
 }

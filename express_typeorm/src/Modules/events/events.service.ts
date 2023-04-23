@@ -1,5 +1,6 @@
 import { Repository } from "typeorm";
 import { Event } from "./entities/event.entity";
+import { Workshop } from "./entities/workshop.entity";
 import App from "../../app";
 
 export class EventsService {
@@ -91,7 +92,20 @@ export class EventsService {
      */
 
   async getEventsWithWorkshops() {
-    const events = await this.eventRepository.find({ relations: ["workshops"] });
+    const events = await this.eventRepository
+      .createQueryBuilder("event")
+      .leftJoin("event.workshops", "workshop")
+      .select([
+        "event.id AS eventId",
+        "event.name AS eventName",
+        "event.createdAt",
+        "workshop.id AS workshopId",
+        "workshop.name AS workshopName",
+        "workshop.start",
+        "workshop.end",
+        "workshop.createdAt AS workshopCreatedAt",
+      ])
+      .getMany();
     return events;
   }
 
